@@ -71,8 +71,6 @@ class recommender:
 		self.input = input
 
 	def manhatan(input, rating1, rating2):
-		distance = 0.0
-
 		for movie in rating1:
 			if movie in rating2:
 				distance = abs(rating1[movie] - rating2[movie])
@@ -90,7 +88,7 @@ class recommender:
 		denominator = 0
 
 		for movie in rating1:
-			if movie in rating2:
+			if movie in rating2 and rating2[movie] != 0.0 and rating1 != 0:
 				n = n + 1
 				x = rating1[movie]
 				y = rating2[movie]
@@ -105,23 +103,21 @@ class recommender:
 			numerator = sumxy - (sumx * sumy) / n
 
 		if denominator == 0:
-			return 0.0
+			return 0
 		else :
-			return float(numerator / denominator)
+			return (numerator / denominator)
 
 	def nearestNeighbor(self, username):
 		""" returns a sorted list of users based on the similarity with a given user """
-		distance = {}
+		distance = []
 		for user in self.input:
 			if user != username:
-				x = self.manhatan(self.input[user], self.input[username])
-				#x = self.pearson(self.input[user], self.input[username])
-				#distance.append((user, x))
-				distance[user] = float(x)
+				x = self.pearson(self.input[user], self.input[username])
+				distance.append((user, x))
 
-		sorted_distance = sorted(distance.items(), key=operator.itemgetter(1), reverse = True)
+		distance = sorted(distance, key=lambda distance: distance[1], reverse = True)
 
-		return sorted_distance
+		return distance
 
 	def computeRecommendation(self):
 
@@ -132,33 +128,27 @@ class recommender:
 		for user in self.input:
 			distance = self.nearestNeighbor(user)
 			count = 0
-			flag = 0
 			visited = {}
 
-			print "Hi user " + user + ", You should watch the following movies"
+			print "Hi user" + user + ", You should watch the following movies"
 
 			for instance in distance:
-				movies = self.input[instance[0]]	
-				#print "Similar user " + instance[0]	+ " and similarity ", instance[1]		
+				movies = self.input[instance[0]]				
 
 				for movie in movies:
 
 					if movie not in visited:
-						if movies[movie] >= 3.0 and self.input[user].has_key(movie) == False:
+						if movies[movie] >= 4.0 and self.input[user].has_key(movie) == False:
 						    print movie
 						    count = count + 1
 						    visited[movie] = 0
-						elif movies[movie] >= 4.0 and self.input[user].has_key(movie) == False:
-						    print " Must Watch " + movie
+						elif movies[movie] >= 4.5 and self.input[user].has_key(movie) == False:
+						    print "Must Watch" + movie
 						    count = count + 1
 						    visited[movie] = 0
 
-						if count >= self.n:
-							flag = 1
+						if count == self.n:
 							break
-
-				if flag == 1:
-					break
 		sys.stdout = orig_stdout
 		f.close()
 
